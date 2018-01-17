@@ -1,40 +1,55 @@
-import React, { Component } from 'react'
+import React, { Component } from "react"
 
-import { Tasks } from '../api/Tasks'
+import { Meteor } from "meteor/meteor"
+
+import { 
+  ListGroupItem,
+  InputGroup,
+  InputGroupAddon,
+  ListGroupItemHeading,
+  ListGroupItemText
+} from "reactstrap"
+
+import { Tasks } from "../api/Tasks"
+
+import classnames from "classnames"
 
 // Task component - represents a single todo item
 export default class Task extends Component {
 
   deleteThisTask() {
-    Tasks.remove(this.props.task._id)
+    Meteor.call("task.remove", this.props.task._id)
   }
 
   toggleTaskChecked(event) {
     event.preventDefault()
 
-    Tasks.update(this.props.task._id, {
-      $set: { checked: !this.props.task.checked }
-    })
+    Meteor.call("task.setChecked", this.props.task._id, !this.props.task.checked)
   }
 
   render() {
-    const taskClassName = this.props.task.checked ? "checked" : ""
+    const taskClassName = classnames({
+      "task-checked": this.props.task.checked,
+      "private": this.props.task.private
+    })
+
+    const taskTextClassName = classnames({ 
+      checked: this.props.task.checked
+    })
 
     return (
-      <li className={taskClassName}>
-        <button className="delete" onClick={() => this.deleteThisTask()}>
-          &times;
-        </button>
-
-        <input
-          type="checkbox"
-          readOnly
-          checked={this.props.task.checked || false}
-          onClick={(e) => this.toggleTaskChecked(e)}
-        />
-
-        <span className="text">{this.props.task.text}</span>
-      </li>
+      <ListGroupItem className={taskClassName} onClick={(e) => this.toggleTaskChecked(e)}>
+          <button 
+            className="delete" 
+            onClick={() => this.deleteThisTask()}
+            disabled={Meteor.userId() !== this.props.task.userId}
+          >
+            &times;
+          </button>
+          
+          <div className={taskTextClassName}>{this.props.task.text}</div>
+          <small>{this.props.task.username}</small>
+      </ListGroupItem>
     );
   }
 }
