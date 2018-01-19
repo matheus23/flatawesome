@@ -2,6 +2,7 @@ import React, { Component } from "react"
 import ReactDOM from "react-dom"
 import { withTracker } from "meteor/react-meteor-data"
 import { Meteor } from "meteor/meteor"
+import { Counts } from "meteor/tmeasday:publish-counts"
 
 import { 
 	Container, 
@@ -44,6 +45,7 @@ class App extends Component {
 			<Container>
 				<Media body>
 					<h1 className="font-weight-light">The greatest TODO app of all time</h1>
+					<small># of Tasks: { this.props.tasksCount }</small>
 
 					<Form onSubmit={(e) => this.handleSubmit(e)}>
 						<FormGroup row>
@@ -98,6 +100,7 @@ export default withTracker(() => {
 
 	return {
 		tasks: Tasks.find().fetch(),
-		currentUser: Meteor.user()
+		tasksCount: Counts.get("tasksCount"),
+		currentUser: Meteor.user(),
 	}
 })(App)

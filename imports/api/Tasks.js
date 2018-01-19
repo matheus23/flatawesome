@@ -1,11 +1,14 @@
 import { Meteor } from "meteor/meteor"
 import { check } from "meteor/check"
 import { Mongo } from "meteor/mongo"
- 
+import { Counts } from "meteor/tmeasday:publish-counts"
+
 export const Tasks = new Mongo.Collection("tasks")
     
 if (Meteor.isServer) {
-    Meteor.publish("tasks", function tasksPublication() {
+    Meteor.publish("tasks", function () {
+        Counts.publish(this, "tasksCount", Tasks.find())
+
         if (!this.userId) {
             return Tasks.find({
                 private: { $ne: true }
