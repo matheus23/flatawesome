@@ -10,10 +10,12 @@
     "bootstrap": "^4.0.0-beta.3",
     "classnames": "^2.2.5",
     "material-ui": "^1.0.0-beta.29",
+    "material-ui-icons": "^1.0.0-beta.17",
     "meteor-node-stubs": "^0.3.2",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-transition-group": "^2.2.1",
-    "reactstrap": "^5.0.0-alpha.4"
+    "reactstrap": "^5.0.0-alpha.4",
+    "typeface-roboto": "0.0.50"
   }
 }
