@@ -1,5 +1,6 @@
 import React, { Component } from "react"
 import { Meteor } from "meteor/meteor"
+
 import List from "material-ui/List/List"
 import ListItem from "material-ui/List/ListItem"
 import Checkbox from "material-ui/Checkbox/Checkbox"
@@ -14,10 +15,12 @@ import DialogTitle from "material-ui/Dialog/DialogTitle"
 import DialogContent from "material-ui/Dialog/DialogContent"
 import DialogActions from "material-ui/Dialog/DialogActions"
 import IconButton from "material-ui/IconButton/IconButton"
+import Typography from "material-ui/Typography/Typography"
+import Grid from "material-ui/Grid/Grid"
+import Paper from "material-ui/Paper/Paper"
 
 import DeleteIcon from "material-ui-icons/Delete"
 import AddIcon from "material-ui-icons/AddShoppingCart"
-import Typography from "material-ui/Typography/Typography";
 
 
 const styles = theme => ({
@@ -25,6 +28,9 @@ const styles = theme => ({
         position: "absolute",
         bottom: theme.spacing.unit * 4,
         right: theme.spacing.unit * 4
+    },
+    content: {
+        "max-width": "900px"
     }
 })
 
@@ -41,23 +47,25 @@ class ShoppingList extends Component {
         const { classes, shoppingList } = this.props
 
         return (
-            <Typography component="div">
-                <AddShoppingListItemDialog 
-                    open={this.state.currentlyAddingItem} 
-                    onCancel={() => this.stopAddingItem()}
-                    onAdd={(itemText) => this.addItem(itemText)}/>
-                <List>
-                    {shoppingList.map((item) => <ShoppingListItem key={item._id} {...item}/>)}
-                </List>
-                <Button 
-                    fab 
-                    raised
-                    className={classes.bottomRightFab} 
-                    color="accent"
-                    onClick={(event) => this.startAddingItem(event)}>
-                    <AddIcon />
-                </Button>
-            </Typography>
+            <Grid item xs={12} className={classes.content}>
+                <Paper>
+                    <AddShoppingListItemDialog 
+                        open={this.state.currentlyAddingItem} 
+                        onCancel={() => this.stopAddingItem()}
+                        onAdd={(itemText) => this.addItem(itemText)}/>
+                    <List>
+                        {shoppingList.map((item) => <ShoppingListItem key={item._id} {...item}/>)}
+                    </List>
+                    <Button 
+                        fab 
+                        raised
+                        className={classes.bottomRightFab} 
+                        color="accent"
+                        onClick={(event) => this.startAddingItem(event)}>
+                        <AddIcon />
+                    </Button>
+                </Paper>
+            </Grid>
         )
     }
 

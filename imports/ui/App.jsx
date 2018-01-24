@@ -12,13 +12,21 @@ import Typography from "material-ui/Typography/Typography"
 import Toolbar from "material-ui/Toolbar/Toolbar"
 import { Menu } from "material-ui-icons"
 import IconButton from "material-ui/IconButton/IconButton"
+import Tabs from "material-ui/Tabs/Tabs"
+import Tab from "material-ui/Tabs/Tab"
+import Grid from "material-ui/Grid/Grid"
+import withStyles from "material-ui/styles/withStyles"
 
 import ShoppingList from "./ShoppingList"
 import { ShoppingListCollection } from "../api/ShoppingListCollection"
 import { theme } from "./Theme"
-import Tabs from "material-ui/Tabs/Tabs"
-import Tab from "material-ui/Tabs/Tab"
 
+
+const styles = theme => ({
+	container: {
+		"max-width": "900px"
+	}
+})
 
 class App extends Component {
 	constructor(props) {
@@ -35,7 +43,15 @@ class App extends Component {
 						<Tab label="Finances" />
 					</Tabs>
 				</AppBar>
-				<ShoppingList shoppingList={this.props.shoppingList} />
+				<div style={{ padding: theme.spacing.unit * 2 }}>
+					<Grid
+						container
+						justify="center"
+						alignItems="stretch"
+					>
+						<ShoppingList shoppingList={this.props.shoppingList} />
+					</Grid>
+				</div>
 			</MuiThemeProvider>
 		)
 	}
@@ -48,4 +64,4 @@ export default withTracker(() => {
 		shoppingList: ShoppingListCollection.find().fetch(),
 		currentUser: Meteor.user()
 	}
-})(App)
+})(withStyles(styles)(App))
