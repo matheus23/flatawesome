@@ -17,20 +17,24 @@ import Tab from "material-ui/Tabs/Tab"
 import Grid from "material-ui/Grid/Grid"
 import withStyles from "material-ui/styles/withStyles"
 
+import SwipeableViews from "react-swipeable-views"
+
+
 import ShoppingList from "./ShoppingList"
+import Finances from "./Finances"
 import { ShoppingListCollection } from "../api/ShoppingListCollection"
-import { theme } from "./Theme"
+import { theme, styles } from "./Theme"
 
-
-const styles = theme => ({
-	container: {
-		"max-width": "900px"
-	}
-})
 
 class App extends Component {
 	constructor(props) {
 		super(props)
+
+		this.state = {
+			index: 0
+		}
+
+		this.fabContainer = []
 	}
 
 	render() {
@@ -38,19 +42,27 @@ class App extends Component {
 			<MuiThemeProvider theme={theme}>
 				<Reboot />
 				<AppBar position="static">
-					<Tabs value={0} centered>
+					<Tabs 
+						value={this.state.index} 
+						onChange={(e, index) => this.setState({ index: index })}
+						centered
+					>
 						<Tab label="Shopping List" />
 						<Tab label="Finances" />
 					</Tabs>
 				</AppBar>
-				<div style={{ padding: theme.spacing.unit * 2 }}>
-					<Grid
-						container
-						justify="center"
-						alignItems="stretch"
-					>
-						<ShoppingList shoppingList={this.props.shoppingList} />
-					</Grid>
+				<SwipeableViews
+					axis="x"
+					index={this.state.index}
+					onChangeIndex={(index) => this.setState({ index: index })}
+				>
+					<ShoppingList visible={this.state.index === 0} fabContainer={this.fabContainer[0]} shoppingList={this.props.shoppingList} />
+					<Finances visible={this.state.index === 1} fabContainer={this.fabContainer[1]} />
+				</SwipeableViews>
+				
+				<div ref={(node) => { this.fabContainer[0] = node; }}>
+				</div>
+				<div ref={(node) => { this.fabContainer[1] = node; }}>
 				</div>
 			</MuiThemeProvider>
 		)

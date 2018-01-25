@@ -18,21 +18,12 @@ import IconButton from "material-ui/IconButton/IconButton"
 import Typography from "material-ui/Typography/Typography"
 import Grid from "material-ui/Grid/Grid"
 import Paper from "material-ui/Paper/Paper"
+import Portal from "material-ui/Portal/Portal"
 
 import DeleteIcon from "material-ui-icons/Delete"
 import AddIcon from "material-ui-icons/AddShoppingCart"
 
-
-const styles = theme => ({
-    bottomRightFab: {
-        position: "absolute",
-        bottom: theme.spacing.unit * 4,
-        right: theme.spacing.unit * 4
-    },
-    content: {
-        "max-width": "900px"
-    }
-})
+import { theme, styles } from "./Theme"
 
 class ShoppingList extends Component {
     constructor(props) {
@@ -44,28 +35,47 @@ class ShoppingList extends Component {
     }
 
     render() {
-        const { classes, shoppingList } = this.props
+        const { theme, classes, shoppingList, fabContainer, visible } = this.props
 
         return (
-            <Grid item xs={12} className={classes.content}>
-                <Paper>
-                    <AddShoppingListItemDialog 
-                        open={this.state.currentlyAddingItem} 
-                        onCancel={() => this.stopAddingItem()}
-                        onAdd={(itemText) => this.addItem(itemText)}/>
-                    <List>
-                        {shoppingList.map((item) => <ShoppingListItem key={item._id} {...item}/>)}
-                    </List>
-                    <Button 
-                        fab 
-                        raised
-                        className={classes.bottomRightFab} 
-                        color="accent"
-                        onClick={(event) => this.startAddingItem(event)}>
-                        <AddIcon />
-                    </Button>
-                </Paper>
-            </Grid>
+            <div style={{ padding: theme.spacing.unit * 2 }}>
+                <Grid
+                    container
+                    justify="center"
+                    alignItems="stretch"
+                >
+                    <Grid item xs={12} className={classes.content}>
+                        <Paper>
+                            <AddShoppingListItemDialog 
+                                open={this.state.currentlyAddingItem} 
+                                onCancel={() => this.stopAddingItem()}
+                                onAdd={(itemText) => this.addItem(itemText)}/>
+                            <List>
+                                {shoppingList.map((item) => <ShoppingListItem key={item._id} {...item}/>)}
+                            </List>
+                        </Paper>
+                    </Grid>
+                </Grid>
+                <Portal container={fabContainer}>
+                    <Zoom
+                        appear={false}
+                        in={visible}
+                        timeout={theme.transitions.duration.enteringScreen}
+                        enterDelay={theme.transitions.duration.leavingScreen}
+                        ref={(node) => { this.fabContainer = node; }}
+                        unmountOnExit
+                    >
+                        <Button 
+                            fab 
+                            raised
+                            className={classes.bottomRightFab} 
+                            color="accent"
+                            onClick={(event) => this.startAddingItem(event)}>
+                            <AddIcon />
+                        </Button>
+                    </Zoom>
+                </Portal>
+            </div>
         )
     }
 

@@ -14,5 +14,19 @@ export const theme = createMuiTheme({
 			dark: "#4b2c20",
 			contrastText: "#ffffff"
 		}
+	},
+	spacing: {
+		unit: 6
 	}
+})
+
+export const styles = theme => ({
+    bottomRightFab: {
+        position: "fixed",
+        bottom: theme.spacing.unit * 4,
+        right: theme.spacing.unit * 4
+    },
+    content: {
+        "max-width": "900px"
+    }
 })
