@@ -21,6 +21,27 @@ export const theme = createMuiTheme({
 })
 
 export const styles = theme => ({
+	root: {
+		height: "100%"
+	},
+	swipeableView: {
+		height: "100%"
+	},
+
+	appBar: {
+		display: "flex",
+		flexDirection: "row",
+		alignItems: "center",
+		justifyConten: "space-between"
+	},
+	menuButton: {
+		marginLeft: theme.spacing.unit,
+		padding: theme.spacing.unit
+	},
+	tabs: {
+		flexGrow: 1
+	},
+
     bottomRightFab: {
         position: "fixed",
         bottom: theme.spacing.unit * 4,
@@ -28,5 +49,9 @@ export const styles = theme => ({
     },
     content: {
         "max-width": "900px"
-    }
+	},
+
+	sidebar: {
+		width: 300
+	}
 })
