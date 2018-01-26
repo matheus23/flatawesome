@@ -48,10 +48,21 @@ export const styles = theme => ({
         right: theme.spacing.unit * 4
     },
     content: {
-        "max-width": "900px"
+        maxWidth: 900
 	},
 
 	sidebar: {
 		width: 300
-	}
+	},
+
+    loginContainer: {
+        display: "flex",
+        justifyContent: "center",
+		alignItems: "center",
+		marginTop: theme.spacing.unit * 4,
+		marginBottom: theme.spacing.unit * 4
+	},
+	loginButtons: {
+		padding: theme.spacing.unit * 2
+	},
 })
