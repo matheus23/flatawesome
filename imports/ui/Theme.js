@@ -1,5 +1,7 @@
 import { createMuiTheme } from "material-ui/styles"
 
+import red from "material-ui/colors/red"
+
 export const theme = createMuiTheme({
 	palette: {
 		primary: {
@@ -24,6 +26,16 @@ export const styles = theme => ({
 	root: {
 		height: "100%"
 	},
+	flatAWESOME: {
+		padding: theme.spacing.unit * 4
+	},
+	backgroundImage: {
+		backgroundImage: "url('loft.jpg')",
+		height: "100%", 
+		backgroundPosition: "center",
+		backgroundRepeat: "no-repeat",
+		backgroundSize: "cover",
+	},
 	swipeableView: {
 		height: "100%"
 	},
@@ -32,7 +44,7 @@ export const styles = theme => ({
 		display: "flex",
 		flexDirection: "row",
 		alignItems: "center",
-		justifyConten: "space-between"
+		justifyContent: "space-between"
 	},
 	menuButton: {
 		marginLeft: theme.spacing.unit,
@@ -59,10 +71,31 @@ export const styles = theme => ({
         display: "flex",
         justifyContent: "center",
 		alignItems: "center",
-		marginTop: theme.spacing.unit * 4,
-		marginBottom: theme.spacing.unit * 4
 	},
-	loginButtons: {
+	padded: {
 		padding: theme.spacing.unit * 2
 	},
+	askCreateAccount: {
+		display: "flex",
+		flexDirection: "row",
+		alignItems: "center",
+	},
+	creatingAccount: {
+		display: "flex",
+		flexDirection: "column",
+		alignItems: "center"
+	},
+
+	centerContainer: {
+		display: "flex",
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center"
+	},
+	center: {
+	},
+	dangerButton: {
+		color: theme.palette.common.white,
+		backgroundColor: red[500]
+	}
 })

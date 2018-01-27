@@ -6,7 +6,7 @@ export const ShoppingListCollection = new Mongo.Collection("shoppingList")
     
 if (Meteor.isServer) {
     Meteor.publish("shoppingList", function () {
-        return ShoppingListCollection.find();
+        return ShoppingListCollection.find()
     })
 }
 

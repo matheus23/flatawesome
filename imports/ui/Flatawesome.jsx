@@ -43,7 +43,7 @@ class Flatawesome extends Component {
 		const { classes } = this.props
 
         return (
-            <Typography component="div">
+            <Typography component="div" className={classes.root}>
                 <AppBar position="static" className={classes.appBar}>
                     <IconButton className={classes.menuButton} onClick={() => this.toggleDrawer()}>
                         <MenuIcon />
@@ -80,6 +80,7 @@ class Flatawesome extends Component {
                 >
                     <SidebarInfo 
                         currentUser={this.props.currentUser} 
+                        currentFlat={this.props.currentFlat}
                         onClose={() => this.setState({ drawerOpen: false })}
                     />
                 </Drawer>

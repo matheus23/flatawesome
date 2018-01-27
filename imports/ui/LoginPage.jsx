@@ -2,6 +2,8 @@ import React, { Component } from "react"
 import ReactDOM from "react-dom"
 import { withTracker } from "meteor/react-meteor-data"
 import { Meteor } from "meteor/meteor"
+import { Accounts } from "meteor/accounts-base"
+import { Session } from "meteor/session"
 
 import { MuiThemeProvider } from "material-ui/styles"
 import AppBar from "material-ui/AppBar/AppBar"
@@ -22,17 +24,22 @@ import SidebarInfo from "./SidebarInfo"
 
 import { ShoppingListCollection } from "../api/ShoppingListCollection"
 import { FinancesCollection } from "../api/FinancesCollection"
+import { FlatsCollection } from "../api/FlatsCollection"
 import { theme, styles } from "./Theme"
 
 import Drawer from "material-ui/Drawer/Drawer"
-import Stepper from "material-ui/Stepper/Stepper";
-import Step from "material-ui/Stepper/Step";
-import StepLabel from "material-ui/Stepper/StepLabel";
-import Button from "material-ui/Button/Button";
-import StepContent from "material-ui/Stepper/StepContent";
-import FormGroup from "material-ui/Form/FormGroup";
-import TextField from "material-ui/TextField/TextField";
+import Stepper from "material-ui/Stepper/Stepper"
+import Step from "material-ui/Stepper/Step"
+import StepLabel from "material-ui/Stepper/StepLabel"
+import Button from "material-ui/Button/Button"
+import StepContent from "material-ui/Stepper/StepContent"
+import FormGroup from "material-ui/Form/FormGroup"
+import TextField from "material-ui/TextField/TextField"
 import Paper from "material-ui/Paper/Paper"
+import Divider from "material-ui/Divider/Divider"
+import List from "material-ui/List/List"
+import ListItemText from "material-ui/List/ListItemText"
+import ListItem from "material-ui/List/ListItem"
 
 
 class LoginPage extends Component {
@@ -40,24 +47,29 @@ class LoginPage extends Component {
         super(props)
 
         this.state = {
-            activeStep: 0,
             loginUsername: "",
-            loginPassword: ""
+            loginPassword: "",
+            creatingAccount: false,
+            repeatedPassword: "",
+
+            flatName: ""
         }
     }
 
     render() {
-        const { classes } = this.props
+        const { invitedFlats, classes } = this.props
 
         return (
-            <div className={classes.loginContainer}>
+            <div className={classes.loginContainer + " " + classes.backgroundImage}>
                 <Paper
                     className={classes.content}
+                    elevation={20}
                 >
+                    <Typography type="display2" className={classes.flatAWESOME}>FlatAWESOME</Typography>
                     <Stepper
                         orientation="vertical"
                         className={classes.content}
-                        activeStep={this.state.activeStep}
+                        activeStep={this.determineStep()}
                     >
                         <Step
                             label="Log in or register"
@@ -79,7 +91,36 @@ class LoginPage extends Component {
                                         onChange={(event) => this.setState({ loginPassword: event.target.value })}
                                     />
 
-                                    <FormGroup row className={classes.loginButtons}>
+                                    { this.state.creatingAccount
+                                        ?   <TextField
+                                                label="Repeat Password"
+                                                type="password"
+                                                error={this.state.loginPassword !== this.state.repeatedPassword}
+                                                value={this.state.repeatedPassword}
+                                                onChange={(event) => this.setState({ repeatedPassword: event.target.value })}
+                                            />
+                                        : ""
+                                    }
+                                    <div className={classes.askCreateAccount}>
+                                        <Typography type="caption">
+                                            { this.state.creatingAccount
+                                                ? "Already have an account?"
+                                                : "Don't have an account yet?"
+                                            }
+                                        </Typography>
+                                        <Button
+                                            onClick={() => this.setState({ creatingAccount: !this.state.creatingAccount })}
+                                        >
+                                            { this.state.creatingAccount
+                                                ? "Go back"
+                                                : "Create one"
+                                            }
+                                        </Button>
+                                    </div>
+
+                                    { this.state.loginError ? <Typography color="error" type="caption">{this.state.loginError}</Typography> : "" }
+
+                                    <FormGroup row className={classes.formButtons}>
                                         <Button 
                                             disabled
                                         >
@@ -88,9 +129,13 @@ class LoginPage extends Component {
                                         <Button
                                             raised
                                             color="primary"
-                                            onClick={() => this.login()}
+                                            onClick={() => this.loginOrRegister()}
+                                            disabled={ this.state.creatingAccount && this.state.loginPassword !== this.state.repeatedPassword }
                                         >
-                                            Log in
+                                            { this.state.creatingAccount
+                                                ? "Register"
+                                                : "Log in"
+                                            }
                                         </Button>
                                     </FormGroup>
                                 </FormGroup>
@@ -100,6 +145,57 @@ class LoginPage extends Component {
                             label="Create or join a flat"
                         >
                             <StepLabel>Create or join a flat</StepLabel>
+                            <StepContent>
+                                <Typography type="headline">Create a flat</Typography>
+                                <TextField
+                                    required
+                                    label="Flat name"
+                                    value={this.state.flatName}
+                                    onChange={(event) => this.setState({ flatName: event.target.value })}
+                                />
+                                
+                                <FormGroup
+                                    row 
+                                    className={classes.padded}
+                                >
+                                    <Button
+                                        raised
+                                        color="primary"
+                                        onClick={() => this.createFlat()}
+                                    >
+                                        Create
+                                    </Button>
+                                </FormGroup>
+                                
+                                <Divider />
+
+                                <div className={classes.centerContainer}>
+                                    <Typography type="caption" className={classes.centered}>or: </Typography>
+                                </div>
+                                <Typography type="headline">Join via an invitation: </Typography>
+                                <div className={classes.centerContainer}>
+                                    { invitedFlats.length > 0
+                                        ? ""
+                                        : <Typography type="subheading" className={classes.centered}>You have not been invited yet :(</Typography>
+                                        }
+                                </div>
+                                <List>
+                                    { invitedFlats.map((flat) => 
+                                            <ListItem
+                                                key={flat._id}
+                                                button
+                                                onClick={() => this.joinFlat(flat)}
+                                            >
+                                                <ListItemText primary={flat.flatName} secondary={"Invited by: " + flat.ownerId}/>
+                                            </ListItem>
+                                        )
+                                    }
+                                </List>
+
+                                <Divider />
+
+                                <Button onClick={() => Accounts.logout()}>Back</Button>
+                            </StepContent>
                         </Step>
                         <Step
                             label="???"
@@ -112,16 +208,56 @@ class LoginPage extends Component {
                             <StepLabel>PROFIT</StepLabel>
                         </Step>
                     </Stepper>
+                    <Typography type="caption" className={classes.padded}>* Required</Typography>
                 </Paper>
             </div>
         )
     }
 
-    login() {
-        Meteor.loginWithPassword(this.state.loginUsername, this.state.loginPassword)
-        this.setState({
-            activeStep: 1
-        })
+    determineStep() {
+        if (this.props.currentUser) {
+            if (this.props.currentFlat) {
+                return 2
+            }
+            return 1
+        }
+        return 0
+    }
+
+    loginOrRegister() {
+        if (!this.state.creatingAccount) {
+            Meteor.loginWithPassword(this.state.loginUsername, this.state.loginPassword, (error) => {
+                this.setState({
+                    loginError: error ? error.reason : undefined
+                })
+            })
+        } else if (this.state.loginPassword === this.state.repeatedPassword) {
+            Accounts.createUser({
+                username: this.state.loginUsername,
+                password: this.state.loginPassword
+            }, (error) => {
+                this.setState({
+                    loginError: error ? error.reason : undefined
+                })
+            })
+        }
+    }
+
+    createFlat() {
+        if (this.state.flatName !== "") {
+            Meteor.call("flats.insert", this.state.flatName, (error, flat) => {
+                if (error) {
+                    console.log("Flat creation error", error)
+                }
+                if (flat) {
+                    Session.set("flat", flat)
+                }
+            })
+        }
+    }
+
+    joinFlat(flat) {
+        Meteor.call("flats.join", flat._id)
     }
 }
 

@@ -28,3 +28,14 @@
 .list-group-item.task-checked.private {
   background-color: #d6deee;
 }
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+}
+
+#render-target {
+  height: 100%;
+}
