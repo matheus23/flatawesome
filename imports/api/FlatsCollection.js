@@ -73,8 +73,10 @@ Meteor.methods({
                 const newMembers = members.slice(1, members.length)
 
                 FlatsCollection.update(flatAsOwner._id, {
-                    ownerId: newOwner,
-                    members: newMembers
+                    $set: {
+                        ownerId: newOwner,
+                        members: newMembers
+                    }
                 })
             } else {
                 // TODO: remove all data that was stored in the flat

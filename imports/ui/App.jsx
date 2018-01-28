@@ -53,11 +53,9 @@ export default withTracker(() => {
 	const invitedFlats = flats.filter((flat) =>
 		flat.invitations.includes(currentUser._id)
 	)
-	
+
  	// the server will only expose users we are allowed to know about to us
 	const relatedUsers = Meteor.users.find().fetch()
-
-	console.log(relatedUsers)
 
 	return {
 		shoppingList: shoppingList,
