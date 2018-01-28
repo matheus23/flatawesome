@@ -46,7 +46,6 @@ export default withTracker(() => {
 	const currentUser = Meteor.user()
 
 	const currentFlat = flats.find((flat) => 
-		flat.ownerId === currentUser._id || 
 		flat.members.includes(currentUser._id)
 	)
 

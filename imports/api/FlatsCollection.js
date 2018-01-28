@@ -15,7 +15,6 @@ if (Meteor.isServer) {
             // Only return flats that you're a part of or got invited to
             return FlatsCollection.find({
                 $or: [
-                    { ownerId: this.userId },
                     { members: { $elemMatch: {  $eq: this.userId } } },
                     { invitations: { $elemMatch: {  $eq: this.userId } } }
                 ]
@@ -26,7 +25,6 @@ if (Meteor.isServer) {
                 find(flat) {
                     return Meteor.users.find({
                         $or: [
-                            { _id: flat.ownerId },
                             { _id: { $in: flat.members } },
                             { _id: { $in: flat.invitations } }
                         ]
@@ -49,10 +47,9 @@ Meteor.methods({
 
         const flat = {
             _id: new Mongo.ObjectID(),
-            ownerId: this.userId,
             flatName: flatName,
-            invitations: [],
-            members: []
+            members: [this.userId],
+            invitations: []
         }
 
         FlatsCollection.insert(flat)
@@ -64,28 +61,17 @@ Meteor.methods({
             throw new Meteor.Error("not-authorized")
         }
 
-        const flatAsOwner = FlatsCollection.findOne({ ownerId: this.userId })
-        if (flatAsOwner) {
-            const members = flatAsOwner.members
+        const flat = FlatsCollection.findOne({ members: { $elemMatch: { $eq: this.userId } } })
+        
+        if (!flat) {
+            throw new Meteor.Error("not-found", "You can't move out when you're not in a flat")
+        }
 
-            if (flatAsOwner.members.length > 0) {
-                const newOwner = members[0]
-                const newMembers = members.slice(1, members.length)
-
-                FlatsCollection.update(flatAsOwner._id, {
-                    $set: {
-                        ownerId: newOwner,
-                        members: newMembers
-                    }
-                })
-            } else {
-                // TODO: remove all data that was stored in the flat
-                FlatsCollection.remove(flatAsOwner._id)
-            }
+        if (flat.members.length == 1) {
+            // TODO: remove all data that was stored in the flat
+            FlatsCollection.remove(flat._id)
         } else {
-            // can only be member of a flat, in this case just remove the member:
-            FlatsCollection.update(
-                { members: { $elemMatch: { $eq: this.userId } } },
+            FlatsCollection.update(flat._id,
                 { $pull: { members: this.userId } }
             )
         }
@@ -98,6 +84,11 @@ Meteor.methods({
             throw new Meteor.Error("not-authorized")
         }
 
+        const flat = FlatsCollection.findOne({ members: { $elemMatch: { $eq: this.userId } } })
+        if (!flat) {
+            throw new Meteor.Error("invalid-operation", "You need to be in a flat to invite someone to")
+        }
+
         // At this point the client does not have enough information to continue simulating the method
         // the client is deliberatly missing information about other users
         if (this.isSimulation) {
@@ -107,11 +98,6 @@ Meteor.methods({
         const user = Meteor.users.findOne({ username: username })
         if (!user) {
             throw new Meteor.Error("not-found", "No such user")
-        }
-
-        const flat = FlatsCollection.findOne({ ownerId: this.userId })
-        if (!flat) {
-            throw new Meteor.Error("not-authorized", "Only the owner is allowed to invite")
         }
 
         if (flat.members.includes(user._id)) {
@@ -131,9 +117,9 @@ Meteor.methods({
             throw new Meteor.Error("not-authorized")
         }
 
-        const flat = FlatsCollection.findOne({ ownerId: this.userId })
+        const flat = FlatsCollection.findOne({ members: { $elemMatch: { $eq: this.userId } } })
         if (!flat) {
-            throw new Meteor.Error("not-authorized", "Only the owner is allowed to delete invitations")
+            throw new Meteor.Error("invalid-operation", "You need to be in a flat to delete invitations from")
         }
 
         FlatsCollection.update(flat._id, {

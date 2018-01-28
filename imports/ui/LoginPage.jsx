@@ -186,7 +186,7 @@ class LoginPage extends Component {
                                                 button
                                                 onClick={() => this.joinFlat(flat)}
                                             >
-                                                <ListItemText primary={flat.flatName} secondary={"Invited by: " + this.getUserById(flat.ownerId).username}/>
+                                                <ListItemText primary={flat.flatName} />
                                             </ListItem>
                                         )
                                     }

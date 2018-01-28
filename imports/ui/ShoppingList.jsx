@@ -154,9 +154,8 @@ class AddShoppingListItemDialog extends Component {
                     <TextField
                         label="Shopping list item"
                         fullWidth
-                        InputProps={{
-                            autoFocus: true
-                        }} 
+                        autoFocus
+                        onKeyDown={(e) => this.onKeyDown(e)}
                         value={this.state.textFieldValue}
                         onChange={(e) => this.setState({ textFieldValue: e.target.value })}
                         />
@@ -192,6 +191,12 @@ class AddShoppingListItemDialog extends Component {
         this.setState({
             textFieldValue: ""
         })
+    }
+
+    onKeyDown(event) {
+        if (event.key === "Enter") {
+            this.onAdd()
+        }
     }
 }
 

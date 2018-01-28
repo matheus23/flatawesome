@@ -97,5 +97,10 @@ export const styles = theme => ({
 	dangerButton: {
 		color: theme.palette.common.white,
 		backgroundColor: red[500]
+	},
+
+	smallAvatar: {
+		width: 30,
+		height: 30
 	}
 })
