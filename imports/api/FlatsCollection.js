@@ -2,6 +2,7 @@ import { Meteor } from "meteor/meteor"
 import { check } from "meteor/check"
 import { Mongo } from "meteor/mongo"
 import { publishComposite } from "meteor/reywood:publish-composite"
+import { checkUserAuthorization } from "./Common"
 
 export const FlatsCollection = new Mongo.Collection("flats")
 
@@ -41,9 +42,7 @@ Meteor.methods({
     "flats.insert"(flatName) {
         check(flatName, String)
 
-        if (!this.userId) {
-            throw new Meteor.Error("not-authorized")
-        }
+        checkUserAuthorization(this.userId)
 
         const flat = {
             _id: new Mongo.ObjectID(),
@@ -56,16 +55,11 @@ Meteor.methods({
 
         return flat
     },
-    "flats.moveOut"() {
-        if (!this.userId) {
-            throw new Meteor.Error("not-authorized")
-        }
 
-        const flat = FlatsCollection.findOne({ members: { $elemMatch: { $eq: this.userId } } })
-        
-        if (!flat) {
-            throw new Meteor.Error("not-found", "You can't move out when you're not in a flat")
-        }
+    "flats.moveOut"() {
+        checkUserAuthorization(this.userId)
+
+        const flat = getUserFlat(this.userId, "You can't move out when you're not in a flat")
 
         if (flat.members.length == 1) {
             // TODO: remove all data that was stored in the flat
@@ -75,19 +69,14 @@ Meteor.methods({
                 { $pull: { members: this.userId } }
             )
         }
-
     },
+
     "flats.inviteUser"(username) {
         check(username, String)
 
-        if (!this.userId) {
-            throw new Meteor.Error("not-authorized")
-        }
+        checkUserAuthorization(this.userId)
 
-        const flat = FlatsCollection.findOne({ members: { $elemMatch: { $eq: this.userId } } })
-        if (!flat) {
-            throw new Meteor.Error("invalid-operation", "You need to be in a flat to invite someone to")
-        }
+        const flat = getUserFlat(this.userId, "You need to be in a flat to invite someone to")
 
         // At this point the client does not have enough information to continue simulating the method
         // the client is deliberatly missing information about other users
@@ -110,33 +99,25 @@ Meteor.methods({
 
         FlatsCollection.update(flat._id, { $push: { invitations: user._id } })
     },
+
     "flats.deleteInvitation"(userId) {
         check(userId, String)
 
-        if (!this.userId) {
-            throw new Meteor.Error("not-authorized")
-        }
+        checkUserAuthorization(this.userId)
 
-        const flat = FlatsCollection.findOne({ members: { $elemMatch: { $eq: this.userId } } })
-        if (!flat) {
-            throw new Meteor.Error("invalid-operation", "You need to be in a flat to delete invitations from")
-        }
+        const flat = getUserFlat(this.userId, "You need to be in a flat to delete invitations from")
 
         FlatsCollection.update(flat._id, {
             $pull: { invitations: userId }
         })
     },
+
     "flats.join"(flatId) {
         check(flatId, Mongo.ObjectID)
 
-        if (!this.userId) {
-            throw new Meteor.Error("not-authorized")
-        }
+        checkUserAuthorization(this.userId)
 
-        const flat = FlatsCollection.findOne(flatId)
-        if (!flat) {
-            throw new Meteor.Error("not-found")
-        }
+        const flat = getUserFlat(this.userId)
 
         if (!flat.invitations.includes(this.userId)) {
             throw new Meteor.Error("not-authorized", "You need to be invited to join a flat")
@@ -148,3 +129,16 @@ Meteor.methods({
         })
     }
 })
+
+export function getUserFlat(userId, errorText) {
+    const flat = findUserFlat(userId)
+    if (!flat) {
+        throw new Meteor.Error("not-found", errorText)
+    }
+
+    return flat
+}
+
+export function findUserFlat(userId) {
+    return FlatsCollection.findOne({ members: { $elemMatch: { $eq: userId } } })
+}
