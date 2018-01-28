@@ -23,6 +23,8 @@ import Portal from "material-ui/Portal/Portal"
 import DeleteIcon from "material-ui-icons/Delete"
 import AddIcon from "material-ui-icons/AddShoppingCart"
 
+import TimeAgo from "react-timeago"
+
 import { theme, styles } from "./Theme"
 
 class ShoppingList extends Component {
@@ -38,24 +40,25 @@ class ShoppingList extends Component {
         const { theme, classes, shoppingList, fabContainer, visible } = this.props
 
         return (
-            <div style={{ padding: theme.spacing.unit * 2 }}>
-                <Grid
-                    container
-                    justify="center"
-                    alignItems="stretch"
-                >
-                    <Grid item xs={12} className={classes.content}>
-                        <Paper>
-                            <AddShoppingListItemDialog 
-                                open={this.state.currentlyAddingItem} 
-                                onCancel={() => this.stopAddingItem()}
-                                onAdd={(itemText) => this.addItem(itemText)}/>
-                            <List>
-                                {shoppingList.map((item) => <ShoppingListItem key={item._id} {...item}/>)}
-                            </List>
-                        </Paper>
-                    </Grid>
-                </Grid>
+            <div className={classes.padded + " " + classes.centerContainer}>
+                <div className={classes.grow + " " + classes.content}>
+                    <Paper>
+                        <AddShoppingListItemDialog 
+                            open={this.state.currentlyAddingItem} 
+                            onCancel={() => this.stopAddingItem()}
+                            onAdd={(itemText) => this.addItem(itemText)}/>
+                        <List>
+                            {shoppingList.map((item) => <ShoppingListItem key={item._id} classes={classes} {...item}/>)}
+                        </List>
+                    </Paper>
+                    <Button
+                        fullWidth
+                        className={classes.padded}
+                        onClick={() => this.clearChecked()}
+                    >
+                        Remove all checked items
+                    </Button>
+                </div>
                 <Portal container={fabContainer}>
                     <Zoom
                         appear={false}
@@ -96,11 +99,15 @@ class ShoppingList extends Component {
         this.stopAddingItem()
         Meteor.call("shoppingList.insert", itemText)
     }
+
+    clearChecked() {
+        Meteor.call("shoppingList.clearChecked")
+    }
 }
 
 class ShoppingListItem extends Component {
     render() {
-        const { checked, text } = this.props
+        const { checked, text, createdAt, classes } = this.props
 
         return (
             <ListItem
@@ -112,7 +119,8 @@ class ShoppingListItem extends Component {
                     onChange={(event, newChecked) => { event.preventDefault(); this.setChecked(newChecked) }}
                     />
                 <ListItemText 
-                    primary={text}
+                    primary={<Typography className={checked ? classes.checkedItem : ""}>{text}</Typography>}
+                    secondary={<TimeAgo date={createdAt} />}
                     />
                 <ListItemSecondaryAction>
                     <IconButton onClick={() => this.removeItem()}>

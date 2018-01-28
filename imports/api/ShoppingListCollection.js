@@ -54,6 +54,17 @@ Meteor.methods({
         checkItemIdAuthorization(itemId, this.userId)
 
         ShoppingListCollection.update(itemId, { $set: { checked: checked }})
+    },
+
+    "shoppingList.clearChecked"() {
+        checkUserAuthorization(this.userId)
+
+        const flat = getUserFlat(this.userId, "You need to in a flat to clear shopping list items")
+
+        ShoppingListCollection.remove({
+            flatId: flat._id,
+            checked: true
+        })
     }
 })
 

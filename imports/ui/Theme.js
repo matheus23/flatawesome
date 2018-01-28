@@ -50,7 +50,8 @@ export const styles = theme => ({
 		marginLeft: theme.spacing.unit,
 		padding: theme.spacing.unit
 	},
-	tabs: {
+	grow: {
+		width: "100%",
 		flexGrow: 1
 	},
 
@@ -65,6 +66,11 @@ export const styles = theme => ({
 
 	sidebar: {
 		width: 300
+	},
+
+	checkedItem: {
+		textDecoration: "line-through",
+		color: theme.palette.grey[500]
 	},
 
     loginContainer: {

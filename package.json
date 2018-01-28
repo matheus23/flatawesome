@@ -17,6 +17,7 @@
     "react-dom": "^16.2.0",
     "react-meteor-data": "^0.2.11",
     "react-swipeable-views": "^0.12.12",
+    "react-timeago": "^3.4.3",
     "react-transition-group": "^2.2.1",
     "reactstrap": "^5.0.0-alpha.4"
   }

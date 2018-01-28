@@ -51,7 +51,7 @@ class Flatawesome extends Component {
                     <Tabs 
                         value={this.state.index} 
                         onChange={(e, index) => this.setState({ index: index })}
-                        className={classes.tabs}
+                        className={classes.grow}
                         centered
                     >
                         <Tab label="Shopping List" />
