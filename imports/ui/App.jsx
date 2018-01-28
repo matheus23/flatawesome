@@ -45,20 +45,19 @@ export default withTracker(() => {
 
 	const currentUser = Meteor.user()
 
-	const foundFlat = flats.find((flat) => 
+	const currentFlat = flats.find((flat) => 
 		flat.ownerId === currentUser._id || 
 		flat.members.includes(currentUser._id)
 	)
 
-	const currentFlat = foundFlat 
-		? Object.assign({}, foundFlat, { owner: Meteor.users.find(foundFlat.ownerId).fetch().username })
-		: undefined
-
 	const invitedFlats = flats.filter((flat) =>
 		flat.invitations.includes(currentUser._id)
 	)
+	
+ 	// the server will only expose users we are allowed to know about to us
+	const relatedUsers = Meteor.users.find().fetch()
 
-	console.log(invitedFlats)
+	console.log(relatedUsers)
 
 	return {
 		shoppingList: shoppingList,
@@ -66,6 +65,7 @@ export default withTracker(() => {
 		flats: flats,
 		currentUser: currentUser,
 		currentFlat: currentFlat,
-		invitedFlats: invitedFlats
+		invitedFlats: invitedFlats,
+		relatedUsers: relatedUsers
 	}
 })(withStyles(styles)(App))

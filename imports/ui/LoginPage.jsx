@@ -57,7 +57,7 @@ class LoginPage extends Component {
     }
 
     render() {
-        const { invitedFlats, classes } = this.props
+        const { invitedFlats, relatedUsers, classes } = this.props
 
         return (
             <div className={classes.loginContainer + " " + classes.backgroundImage}>
@@ -186,7 +186,7 @@ class LoginPage extends Component {
                                                 button
                                                 onClick={() => this.joinFlat(flat)}
                                             >
-                                                <ListItemText primary={flat.flatName} secondary={"Invited by: " + flat.ownerId}/>
+                                                <ListItemText primary={flat.flatName} secondary={"Invited by: " + this.getUserById(flat.ownerId).username}/>
                                             </ListItem>
                                         )
                                     }
@@ -259,6 +259,11 @@ class LoginPage extends Component {
     joinFlat(flat) {
         Meteor.call("flats.join", flat._id)
     }
+
+    getUserById(userId) {
+        return this.props.relatedUsers.find((user) => user._id === userId)
+    }
+
 }
 
 export default withStyles(styles, { withTheme: true})(LoginPage)

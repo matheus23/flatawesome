@@ -1,23 +1,41 @@
 import { Meteor } from "meteor/meteor"
 import { check } from "meteor/check"
 import { Mongo } from "meteor/mongo"
+import { publishComposite } from "meteor/reywood:publish-composite"
 
 export const FlatsCollection = new Mongo.Collection("flats")
 
 if (Meteor.isServer) {
-    Meteor.publish("flats", function () {
-        if (!this.userId) {
-            return FlatsCollection.find(null)
-        }
+    publishComposite("flats", {
+        find() {
+            if (!this.userId) {
+                return FlatsCollection.find(null)
+            }
 
-        // Only return flats that you're a part of or got invited to
-        return FlatsCollection.find({
-            $or: [
-                { ownerId: this.userId },
-                { members: { $elemMatch: {  $eq: this.userId } } },
-                { invitations: { $elemMatch: {  $eq: this.userId } } }
-            ]
-        })
+            // Only return flats that you're a part of or got invited to
+            return FlatsCollection.find({
+                $or: [
+                    { ownerId: this.userId },
+                    { members: { $elemMatch: {  $eq: this.userId } } },
+                    { invitations: { $elemMatch: {  $eq: this.userId } } }
+                ]
+            })
+        },
+        children: [
+            {
+                find(flat) {
+                    return Meteor.users.find({
+                        $or: [
+                            { _id: flat.ownerId },
+                            { _id: { $in: flat.members } },
+                            { _id: { $in: flat.invitations } }
+                        ]
+                    }, {
+                        fields: { username: 1 }
+                    })
+                }
+            }
+        ]
     })
 }
 

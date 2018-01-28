@@ -81,6 +81,7 @@ class Flatawesome extends Component {
                     <SidebarInfo 
                         currentUser={this.props.currentUser} 
                         currentFlat={this.props.currentFlat}
+                        relatedUsers={this.props.relatedUsers}
                         onClose={() => this.setState({ drawerOpen: false })}
                     />
                 </Drawer>

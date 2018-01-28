@@ -33,7 +33,7 @@ class SidebarInfo extends Component {
     }
 
     render() {
-        const { currentUser, currentFlat, classes, onClose } = this.props
+        const { currentUser, currentFlat, relatedUsers, classes, onClose } = this.props
 
         // TODO: This is ugly AS FUCK fix that PLEASE FIXME
         return (
@@ -62,10 +62,11 @@ class SidebarInfo extends Component {
                     </ListItem>
                     <Divider />
                     <Typography type="title">Members:</Typography>
-                    { currentFlat.members.map((member) => 
-                        <ListItem key={member}>
-                            <ListItemText primary={member} />
-                        </ListItem>)
+                    { currentFlat.members.map((memberId) => 
+                        <ListItem key={memberId}>
+                            <ListItemText primary={this.getUserById(memberId).username} />
+                        </ListItem>
+                        )
                     }
                     <Divider />
                     <ListItem
@@ -94,7 +95,7 @@ class SidebarInfo extends Component {
                 <List>
                     { currentFlat.invitations.map((userId) => 
                         <ListItem key={userId}>
-                            <ListItemText primary={userId} />
+                            <ListItemText primary={this.getUserById(userId).username} />
                             <ListItemSecondaryAction>
                                 <IconButton onClick={() => this.deleteInvitation(userId)} disabled={currentFlat.ownerId !== currentUser._id}>
                                     <DeleteIcon />
@@ -126,6 +127,11 @@ class SidebarInfo extends Component {
     deleteInvitation(userId) {
         Meteor.call("flats.deleteInvitation", userId)
     }
+
+    getUserById(userId) {
+        return this.props.relatedUsers.find((user) => user._id === userId)
+    }
+
 }
 
 function UserAvatar(props) {
