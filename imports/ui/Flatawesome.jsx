@@ -25,6 +25,7 @@ import { FinancesCollection } from "../api/FinancesCollection"
 import { theme, styles } from "./Theme"
 
 import Drawer from "material-ui/Drawer/Drawer"
+import Badge from "material-ui/Badge/Badge";
 
 
 class Flatawesome extends Component {
@@ -40,7 +41,9 @@ class Flatawesome extends Component {
     }
 
     render() {
-		const { classes } = this.props
+        const { classes } = this.props
+        
+        // const remainingShoppingListItems = this.props.shoppingList.filter((item) => !item.checked).length
 
         return (
             <Typography component="div" className={classes.root}>

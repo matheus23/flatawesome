@@ -60,6 +60,10 @@ export const styles = theme => ({
         bottom: theme.spacing.unit * 4,
         right: theme.spacing.unit * 4
     },
+	snackbar: {
+		position: "fixed",
+		bottom: theme.spacing.unit * 2
+	},
     content: {
         maxWidth: 900
 	},
@@ -108,5 +112,5 @@ export const styles = theme => ({
 	smallAvatar: {
 		width: 30,
 		height: 30
-	}
+	},
 })

@@ -6,4 +6,5 @@ import "../imports/api/FlatsCollection"
 
 Meteor.startup(() => {
   // code to run on server at startup
+  process.on('unhandledRejection', r => console.log(r))
 })

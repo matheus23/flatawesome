@@ -39,6 +39,37 @@ Meteor.methods({
         })
     },
 
+    "shoppingList.insertAll"(items) {
+        check(items, [{
+            _id: Mongo.ObjectID,
+            flatId: Mongo.ObjectID,
+            userId: String,
+            text: String,
+            checked: Boolean,
+            createdAt: Date
+        }])
+
+        checkUserAuthorization(this.userId)
+
+        const flat = getUserFlat(this.userId, "You need to be in a flat to add shopping list items")
+
+        if (items.find((item) => !item.flatId.equals(flat._id))) {
+            throw new Meteor.Error("not-authorized", "You can only add shopping list items to your own flat")
+        }
+
+        /* Unfortunately would only works serverside, and also just does not work... it somehow messes up Ids...
+
+        const coll = ShoppingListCollection.rawCollection()
+        const bulk = coll.initializeOrderedBulkOp()
+
+        items.forEach(item => bulk.insert(item))
+
+        bulk.execute()
+        */
+
+        items.forEach((item) => ShoppingListCollection.insert(item))
+    },
+
     "shoppingList.remove"(itemId) {
         check(itemId, Mongo.ObjectID)
 
@@ -61,10 +92,16 @@ Meteor.methods({
 
         const flat = getUserFlat(this.userId, "You need to in a flat to clear shopping list items")
 
-        ShoppingListCollection.remove({
+        const query = {
             flatId: flat._id,
             checked: true
-        })
+        }
+
+        const removedItems = ShoppingListCollection.find(query, { reactive: false }).fetch()
+
+        ShoppingListCollection.remove(query)
+        
+        return removedItems
     }
 })
 

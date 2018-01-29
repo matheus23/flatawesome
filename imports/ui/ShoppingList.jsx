@@ -22,17 +22,21 @@ import Portal from "material-ui/Portal/Portal"
 
 import DeleteIcon from "material-ui-icons/Delete"
 import AddIcon from "material-ui-icons/AddShoppingCart"
+import CloseIcon from "material-ui-icons/Close"
 
 import TimeAgo from "react-timeago"
 
 import { theme, styles } from "./Theme"
+import Snackbar from "material-ui/Snackbar/Snackbar";
 
 class ShoppingList extends Component {
     constructor(props) {
         super(props)
 
         this.state = {
-            currentlyAddingItem: false
+            currentlyAddingItem: false,
+            snackbarOpen: false,
+            lastClearedItems: []
         }
     }
 
@@ -59,6 +63,33 @@ class ShoppingList extends Component {
                         Remove all checked items
                     </Button>
                 </div>
+
+                <Snackbar
+                    className={classes.snackbar}
+                    anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'center',
+                    }}
+                    open={this.state.snackbarOpen}
+                    autoHideDuration={6000}
+                    onClose={() => this.onSnackbarClose(false)}
+                    message="All checked items removed"
+                    action={[
+                        <Button key="undo" color="primary" dense onClick={() => this.onSnackbarClose(true)}>
+                        Undo
+                        </Button>,
+                        <IconButton
+                            key="close"
+                            aria-label="Close"
+                            color="inherit"
+                            className={classes.close}
+                            onClick={() => this.onSnackbarClose(false)}
+                        >
+                            <CloseIcon />
+                        </IconButton>,
+                    ]}
+                />
+
                 <Portal container={fabContainer}>
                     <Zoom
                         appear={false}
@@ -101,7 +132,32 @@ class ShoppingList extends Component {
     }
 
     clearChecked() {
-        Meteor.call("shoppingList.clearChecked")
+        Meteor.call("shoppingList.clearChecked", (error, result) => {
+            if (result) {
+                this.setState({ 
+                    snackbarOpen: true,
+                    lastClearedItems: result
+                })
+            }
+        })
+    }
+
+    onSnackbarClose(undo) {
+        if (undo) {
+            Meteor.call("shoppingList.insertAll", this.state.lastClearedItems, (error, result) => {
+                if (!error) {
+                    this.setState({
+                        snackbarOpen: false,
+                        lastClearedItems: []
+                    })
+                }
+            })
+        } else {
+            this.setState({
+                snackbarOpen: false,
+                lastClearedItems: []
+            })
+        }
     }
 }
 
