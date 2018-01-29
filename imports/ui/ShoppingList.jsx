@@ -52,7 +52,16 @@ class ShoppingList extends Component {
                             onCancel={() => this.stopAddingItem()}
                             onAdd={(itemText) => this.addItem(itemText)}/>
                         <List>
-                            {shoppingList.map((item) => <ShoppingListItem key={item._id} classes={classes} {...item}/>)}
+                            {
+                                shoppingList.map(item => 
+                                    <ShoppingListItem 
+                                        key={item._id} 
+                                        classes={classes} 
+                                        onRemove={item => this.openSnackbarWithUndoable([item])}
+                                        item={item}
+                                    />
+                                )
+                            }
                         </List>
                     </Paper>
                     <Button
@@ -73,7 +82,7 @@ class ShoppingList extends Component {
                     open={this.state.snackbarOpen}
                     autoHideDuration={6000}
                     onClose={() => this.onSnackbarClose(false)}
-                    message="All checked items removed"
+                    message="Item(s) removed"
                     action={[
                         <Button key="undo" color="primary" dense onClick={() => this.onSnackbarClose(true)}>
                         Undo
@@ -134,10 +143,7 @@ class ShoppingList extends Component {
     clearChecked() {
         Meteor.call("shoppingList.clearChecked", (error, result) => {
             if (result) {
-                this.setState({ 
-                    snackbarOpen: true,
-                    lastClearedItems: result
-                })
+                this.openSnackbarWithUndoable(result)
             }
         })
     }
@@ -159,11 +165,20 @@ class ShoppingList extends Component {
             })
         }
     }
+
+    openSnackbarWithUndoable(undoableItems) {
+        this.setState({ 
+            snackbarOpen: true,
+            lastClearedItems: undoableItems
+        })
+    }
 }
 
 class ShoppingListItem extends Component {
     render() {
-        const { checked, text, createdAt, classes } = this.props
+        const { item, classes } = this.props
+
+        const { checked, text, createdAt } = item
 
         return (
             <ListItem
@@ -188,11 +203,12 @@ class ShoppingListItem extends Component {
     }
 
     setChecked(checked) {
-        Meteor.call("shoppingList.setChecked", this.props._id, checked)
+        Meteor.call("shoppingList.setChecked", this.props.item._id, checked)
     }
 
     removeItem() {
-        Meteor.call("shoppingList.remove", this.props._id)
+        Meteor.call("shoppingList.remove", this.props.item._id)
+        this.props.onRemove(this.props.item)
     }
 }
 
