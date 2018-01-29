@@ -13,16 +13,17 @@ if (Meteor.isServer) {
 Meteor.methods({
     "finances.insert"(payment) {
         check(payment, {
-            spenderId: Mongo.ObjectID,
-            recieverIds: [Mongo.ObjectID],
+            spenderId: String,
+            sharedWithIds: [String],
+            description: String,
             amount: Number,
-            date: Date,
-            createdAt: Date
+            date: Date
         })
 
         FinancesCollection.insert(
             Object.assign({}, payment, {
-                _id: new Mongo.ObjectID()
+                _id: new Mongo.ObjectID(),
+                createdAt: new Date()
             })
         )
     },

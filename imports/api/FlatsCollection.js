@@ -117,7 +117,7 @@ Meteor.methods({
 
         checkUserAuthorization(this.userId)
 
-        const flat = getUserFlat(this.userId)
+        const flat = FlatsCollection.findOne(flatId)
 
         if (!flat.invitations.includes(this.userId)) {
             throw new Meteor.Error("not-authorized", "You need to be invited to join a flat")

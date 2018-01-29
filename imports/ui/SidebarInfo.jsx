@@ -1,15 +1,16 @@
 import React, { Component } from "react"
 
+import { findUserById } from "../api/Common"
+
 import withStyles from "material-ui/styles/withStyles"
 import List from "material-ui/List/List"
 import ListItem from "material-ui/List/ListItem"
 import ListItemText from "material-ui/List/ListItemText"
 
-import AccountsUIWrapper from "./AccountsUIWrapper"
+import { UserAvatar } from "./Common"
 
 import { styles } from "./Theme"
 import ListItemSecondaryAction from "material-ui/List/ListItemSecondaryAction"
-import Avatar from "material-ui/Avatar/Avatar"
 import { Meteor } from "meteor/meteor"
 import { Session } from "meteor/session"
 import Divider from "material-ui/Divider/Divider"
@@ -44,11 +45,11 @@ class SidebarInfo extends Component {
             <div className={classes.sidebar}>
                 { this.renderLogoutAndCloseControls(currentUser, onClose) }
                 <Divider />
-                { this.renderFlatMemberList(currentFlat) }
+                { this.renderFlatMemberList(currentFlat, relatedUsers) }
                 <Divider />
                 { this.renderMoveOutButton() }
                 <Divider />
-                { this.renderInvitationList(currentFlat) }
+                { this.renderInvitationList(currentFlat, relatedUsers) }
                 <InvitationDialog
                     open={this.state.currentlyInviting}
                     onClose={() => this.setState({ currentlyInviting: false })}
@@ -80,13 +81,13 @@ class SidebarInfo extends Component {
         )
     }
 
-    renderFlatMemberList(currentFlat) {
+    renderFlatMemberList(currentFlat, relatedUsers) {
         const { classes } = this.props
         return (
             <List dense subheader={<ListSubheader>Members of {currentFlat.flatName}:</ListSubheader>}>
                 {
                     currentFlat.members.map((memberId) => {
-                        const member = this.getUserById(memberId)
+                        const member = findUserById(memberId, relatedUsers)
                         return (
                             <ListItem key={memberId}>
                                 <UserAvatar className={classes.smallAvatar} user={member} />
@@ -115,7 +116,7 @@ class SidebarInfo extends Component {
         )
     }
 
-    renderInvitationList(currentFlat) {
+    renderInvitationList(currentFlat, relatedUsers) {
         const { classes } = this.props
         return (
             <div>
@@ -127,7 +128,7 @@ class SidebarInfo extends Component {
                     }
                     {
                         currentFlat.invitations.map((invitedUserId) => {
-                            const invitedUser = this.getUserById(invitedUserId)
+                            const invitedUser = findUserById(invitedUserId, relatedUsers)
                             return (
                                 <ListItem key={invitedUserId}>
                                     <UserAvatar className={classes.smallAvatar} user={invitedUser} />
@@ -158,10 +159,6 @@ class SidebarInfo extends Component {
         )
     }
 
-    getUserById(userId) {
-        return this.props.relatedUsers.find((user) => user._id === userId)
-    }
-
     logout() {
         Meteor.logout()
     }
@@ -188,16 +185,6 @@ class SidebarInfo extends Component {
         Meteor.call("flats.deleteInvitation", userId)
     }
 
-}
-
-function UserAvatar(props) {
-    const { username } = props.user || { username: "?" }
-
-    const usernameShort = username.slice(0, 1).toUpperCase()
-
-    return (
-        <Avatar alt={username} {...props}>{usernameShort}</Avatar>
-    )
 }
 
 class InvitationDialog extends Component {

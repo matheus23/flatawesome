@@ -25,6 +25,7 @@ import SidebarInfo from "./SidebarInfo"
 import { ShoppingListCollection } from "../api/ShoppingListCollection"
 import { FinancesCollection } from "../api/FinancesCollection"
 import { FlatsCollection } from "../api/FlatsCollection"
+import { findUserById } from "../api/Common"
 import { theme, styles } from "./Theme"
 
 import Drawer from "material-ui/Drawer/Drawer"
@@ -259,11 +260,6 @@ class LoginPage extends Component {
     joinFlat(flat) {
         Meteor.call("flats.join", flat._id)
     }
-
-    getUserById(userId) {
-        return this.props.relatedUsers.find((user) => user._id === userId)
-    }
-
 }
 
 export default withStyles(styles, { withTheme: true})(LoginPage)

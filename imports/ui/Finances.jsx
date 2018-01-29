@@ -1,5 +1,9 @@
 import React, { Component } from "react"
 
+import { Meteor } from "meteor/meteor"
+
+import { findUserById } from "../api/Common"
+
 import withStyles from "material-ui/styles/withStyles"
 import Portal from "material-ui/Portal/Portal"
 import Zoom from "material-ui/transitions/Zoom"
@@ -15,6 +19,24 @@ import DialogContent from "material-ui/Dialog/DialogContent";
 import TextField from "material-ui/TextField/TextField";
 import DialogActions from "material-ui/Dialog/DialogActions";
 
+import NumberFormat from "react-number-format"
+import InputAdornment from "material-ui/Input/InputAdornment";
+import DialogContentText from "material-ui/Dialog/DialogContentText";
+import ListSubheader from "material-ui/List/ListSubheader";
+import ListItem from "material-ui/List/ListItem";
+import ListItemText from "material-ui/List/ListItemText";
+import ListItemSecondaryAction from "material-ui/List/ListItemSecondaryAction";
+import { UserAvatar } from "./Common";
+import Checkbox from "material-ui/Checkbox/Checkbox";
+import List from "material-ui/List/List";
+import Immutable from "immutable"
+import { DatePicker } from 'material-ui-pickers'
+import moment from "moment/moment"
+import ExpansionPanel from "material-ui/ExpansionPanel/ExpansionPanel";
+import ExpansionPanelSummary from "material-ui/ExpansionPanel/ExpansionPanelSummary";
+import ExpandMoreIcon from "material-ui-icons/ExpandMore"
+import ExpansionPanelDetails from "material-ui/ExpansionPanel/ExpansionPanelDetails";
+
 class Finances extends Component {
     constructor(props) {
         super(props)
@@ -25,14 +47,31 @@ class Finances extends Component {
     }
 
     render() {
-        const { fabContainer, visible, theme, classes } = this.props
+        const { currentFlat, relatedUsers, currentUser, finances, fabContainer, visible, theme, classes } = this.props
 
         return (
-            <Typography component="div">
+            <Typography component="div" className={classes.padded + " " + classes.centerContainer}>
+                <div className={classes.grow + " " + classes.content}>
+                    {
+                        finances.map(entry =>
+                            <ExpansionPanel>
+                                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                                    {entry.description + ": " + entry.amount}
+                                </ExpansionPanelSummary>
+                                <ExpansionPanelDetails>
+                                    I just want this to be expandable
+                                </ExpansionPanelDetails>
+                            </ExpansionPanel>
+                        )
+                    }
+                </div>
                 <AddPaymentDialog 
+                    classes={classes}
                     open={this.state.currentlyAddingPayment} 
-                    onCancel={() => this.setState({ currentlyAddingPayment: false })}
-                    onAdd={(payment) => this.addPayment(payment)}
+                    onClose={() => this.setState({ currentlyAddingPayment: false })}
+                    currentFlat={currentFlat}
+                    currentUser={currentUser}
+                    relatedUsers={relatedUsers}
                 />
                 <Portal container={fabContainer}>
                     <Zoom
@@ -72,29 +111,104 @@ class AddPaymentDialog extends Component {
         super(props)
 
         this.state = {
-            textFieldValue: ""
+            paymentText: "",
+            amountText: "",
+            paymentDate: moment(),
+            sharedWith: this.everyoneElse(),
+            errorText: undefined
         }
     }
 
+    everyoneElse() {
+        let everyoneElse = {}
+        this.props.currentFlat.members.forEach(memberId => {
+            if (memberId !== this.props.currentUser._id) {
+                everyoneElse[memberId] = true
+            }
+        })
+        return Immutable.Map(everyoneElse)
+    }
+
     render() {
-        const { open, onCancel, onAdd } = this.props
+        const { open, currentFlat, relatedUsers, currentUser, classes } = this.props
 
         return (
             <Dialog
                 open={open}
-                onClose={() => this.onCancel()}
+                onClose={() => this.closeDialog()}
                 >
                 <DialogTitle>Log a payment</DialogTitle>
                 <DialogContent>
+                    <DialogContentText>
+                        {/* TODO: Write some actually useful text here */}
+                        Adding a payment to the log will split the cost of this payment evenly
+                        between the flatmates you shared it with and yourself.
+                    </DialogContentText>
                     <TextField
-                        label="Amount"
+                        label="What was paid for"
                         fullWidth
+                        autoFocus
+                        required
+                        value={this.state.paymentText}
+                        onChange={e => this.setState({ paymentText: e.target.value })}
+                        margin="normal"
+                    />
+                    <TextField
+                        className={classes.padded}
+                        label="Amount"
+                        required
+                        placeholder="0,00"
+                        value={this.state.amountText}
+                        onChange={(e) => this.setState({ amountText: e.target.value })}
                         InputProps={{
-                            autoFocus: true
+                            inputComponent: EuroAmountInput,
+                            endAdornment: <InputAdornment position="end">€</InputAdornment>
                         }}
-                        value={this.state.textFieldValue}
-                        onChange={(e) => this.setState({ textFieldValue: e.target.value })}
-                        />
+                        inputProps={{
+                            onChangeAsNumber: number => this.setState({ amountNumber: number })
+                        }}
+                        onKeyPress={event => this.addOnEnterKey(event)}
+                    />
+                    <DatePicker
+                        className={classes.padded}
+                        value={this.state.paymentDate}
+                        onChange={newDate => this.setState({ paymentDate: newDate })}
+                        label="the date bought this"
+                        margin="normal"
+                        required
+                        disableFuture
+                    />
+                    <List subheader={<ListSubheader>Flatmates you share this payment with:</ListSubheader>}>
+                        {
+                            currentFlat.members.filter(memberId => memberId !== currentUser._id).map(memberId => {
+                                const member = findUserById(memberId, relatedUsers)
+                                return (
+                                    <ListItem
+                                        key={memberId}
+                                        button
+                                        dense
+                                        onClick={() => this.setState({ 
+                                            sharedWith: this.state.sharedWith.set(memberId, !this.state.sharedWith.get(memberId))
+                                        })}
+                                    >
+                                        <Checkbox 
+                                            checked={this.state.sharedWith.get(memberId)}
+                                            onChange={() => this.setState({
+                                                sharedWith: this.state.sharedWith.set(memberId, !this.state.sharedWith.get(memberId))
+                                            })}
+                                        />
+                                        <ListItemText primary={member.username} />
+                                        <ListItemSecondaryAction>
+                                            <UserAvatar user={member} />
+                                        </ListItemSecondaryAction>
+                                    </ListItem>
+                                )
+                            })
+                        }
+                    </List>
+                    {
+                        this.state.errorText ? <Typography type="caption" color="error">{this.state.errorText}</Typography> : ""
+                    }
                 </DialogContent>
                 <DialogActions>
                     <Button 
@@ -104,6 +218,7 @@ class AddPaymentDialog extends Component {
                     <Button 
                         onClick={() => this.onAdd()} 
                         color="accent"
+                        disabled={!this.state.amountText}
                         raised>
                         Add
                     </Button>
@@ -112,21 +227,84 @@ class AddPaymentDialog extends Component {
         )
     }
 
-    onCancel() {
-        this.clearTextField()
-        this.props.onCancel()
+    closeDialog() {
+        this.clearState()
+        this.props.onClose()
     }
 
     onAdd() {
-        const text = this.state.textFieldValue
-        this.clearTextField()
-        this.props.onAdd(text)
+        let sharedWith = []
+        this.state.sharedWith.forEach((isShared, memberId) => {
+            if (isShared) {
+                sharedWith.push(memberId)
+            }
+        })
+
+        this.addPayment({
+            description: this.state.paymentText,
+            amount: this.state.amountNumber,
+            sharedWith: sharedWith,
+            date: this.state.paymentDate.toDate()
+        })
     }
 
-    clearTextField() {
+    clearState() {
         this.setState({
-            textFieldValue: ""
+            paymentText: "",
+            amountText: "",
+            paymentDate: moment(),
+            sharedWith: this.everyoneElse(),
+            errorText: undefined
         })
+    }
+
+    addOnEnterKey(event) {
+        if (event.key === "Enter") {
+            this.onAdd()
+        }
+    }
+
+    addPayment(payment) {
+        const paymentData = {
+            spenderId: this.props.currentUser._id,
+            sharedWithIds: payment.sharedWith,
+            description: payment.description,
+            amount: payment.amount,
+            date: payment.date
+        }
+
+        console.log(paymentData)
+
+        Meteor.call("finances.insert", paymentData, (error) => {
+            if (error) {
+                this.setState({
+                    errorText: error.reason
+                })
+            } else {
+                this.closeDialog()
+            }
+        })
+    }
+}
+
+class EuroAmountInput extends Component {
+    render() {
+        return (
+            <NumberFormat
+                {...this.props}
+                onValueChange={values => {
+                    this.props.onChange({
+                        target: {
+                            value: values.value
+                        }
+                    })
+                    this.props.onChangeAsNumber(values.floatValue)
+                }}
+                decimalSeparator=","
+                decimalScale={2}
+                fixedDecimalScale
+            />
+        )
     }
 }
 

@@ -7,3 +7,7 @@ export function checkUserAuthorization(userId) {
         throw new Meteor.Error("not-authorized")
     }
 }
+
+export function findUserById(userId, users) {
+    return users.find(user => user._id === userId)
+}

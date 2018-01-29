@@ -68,8 +68,19 @@ class Flatawesome extends Component {
                     onChangeIndex={(index) => this.setState({ index: index })}
                     className={classes.swipeableView}
                 >
-                    <ShoppingList visible={this.state.index === 0} fabContainer={this.fabContainer[0]} shoppingList={this.props.shoppingList} />
-                    <Finances visible={this.state.index === 1} fabContainer={this.fabContainer[1]} finances={this.props.finances} />
+                    <ShoppingList 
+                        visible={this.state.index === 0} 
+                        fabContainer={this.fabContainer[0]} 
+                        shoppingList={this.props.shoppingList}
+                    />
+                    <Finances 
+                        visible={this.state.index === 1} 
+                        fabContainer={this.fabContainer[1]} 
+                        finances={this.props.finances}
+                        currentFlat={this.props.currentFlat}
+                        currentUser={this.props.currentUser}
+                        relatedUsers={this.props.relatedUsers}
+                    />
                 </SwipeableViews>
 
                 <Drawer
