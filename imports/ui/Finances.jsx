@@ -26,7 +26,7 @@ import ListSubheader from "material-ui/List/ListSubheader";
 import ListItem from "material-ui/List/ListItem";
 import ListItemText from "material-ui/List/ListItemText";
 import ListItemSecondaryAction from "material-ui/List/ListItemSecondaryAction";
-import { UserAvatar } from "./Common";
+import { UserAvatar, EurText } from "./Common";
 import Checkbox from "material-ui/Checkbox/Checkbox";
 import List from "material-ui/List/List";
 import Immutable from "immutable"
@@ -51,20 +51,12 @@ class Finances extends Component {
 
         return (
             <Typography component="div" className={classes.padded + " " + classes.centerContainer}>
-                <div className={classes.grow + " " + classes.content}>
-                    {
-                        finances.map(entry =>
-                            <ExpansionPanel>
-                                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                                    {entry.description + ": " + entry.amount}
-                                </ExpansionPanelSummary>
-                                <ExpansionPanelDetails>
-                                    I just want this to be expandable
-                                </ExpansionPanelDetails>
-                            </ExpansionPanel>
-                        )
-                    }
-                </div>
+                <Ledger
+                    finances={finances}
+                    currentUser={currentUser}
+                    relatedUsers={relatedUsers}
+                    classes={classes}
+                />
                 <AddPaymentDialog 
                     classes={classes}
                     open={this.state.currentlyAddingPayment} 
@@ -102,6 +94,75 @@ class Finances extends Component {
         this.setState({
             currentlyAddingPayment: true
         })
+    }
+}
+
+class Ledger extends Component {
+    constructor(props) {
+        super(props)
+    }
+
+    render() {
+        const { finances, currentUser, relatedUsers, classes } = this.props
+
+        return (
+            <div className={classes.grow + " " + classes.content}>
+                {
+                    finances.map(entry => {
+                        const spender = findUserById(entry.spenderId, relatedUsers)
+                        return (
+                            <ExpansionPanel
+                                key={entry._id}
+                            >
+                                <ExpansionPanelSummary 
+                                    expandIcon={<ExpandMoreIcon />}
+                                >
+                                    <div className={classes.financeEntrySummary}>
+                                        <span>
+                                            <UserAvatar user={spender} className={classes.smallAvatar}/>
+                                            {spender.username}
+                                        </span>
+                                        <span>{entry.description}</span>
+                                        <EurText amount={entry.amount} className={classes.financeEntryAmount}/>
+                                        {
+                                            entry.sharedWithIds.includes(currentUser._id)
+                                                ? <EurText prefix="-" amount={entry.amount / (entry.sharedWithIds.length + 1)} className={classes.financeEntryDown} />
+                                                : 
+                                            entry.spenderId === currentUser._id
+                                                ? <EurText prefix="+" amount={entry.amount / (entry.sharedWithIds.length + 1)} className={classes.financeEntryUp} />
+                                                : ""
+                                        }
+                                    </div>
+                                </ExpansionPanelSummary>
+                                <ExpansionPanelDetails>
+                                    <List dense subheader={<ListSubheader>Payment by</ListSubheader>}>
+                                        <ListItem>
+                                            <UserAvatar user={spender} />
+                                            <ListItemText primary={spender.username} />
+                                        </ListItem>
+                                    </List>
+                                    <List dense subheader={<ListSubheader>Shared payment amongst</ListSubheader>}>
+                                        {
+                                            entry.sharedWithIds.map(sharedWithId => {
+                                                const user = findUserById(sharedWithId, relatedUsers)
+                                                return (
+                                                    <ListItem
+                                                        key={sharedWithId}
+                                                    >
+                                                        <UserAvatar user={user} />
+                                                        <ListItemText primary={user.username} secondary={"balance -sth.00€"} />
+                                                    </ListItem>
+                                                )
+                                            })
+                                        }
+                                    </List>
+                                </ExpansionPanelDetails>
+                            </ExpansionPanel>
+                        )
+                    })
+                }
+            </div>
+        )
     }
 }
 
@@ -266,6 +327,7 @@ class AddPaymentDialog extends Component {
 
     addPayment(payment) {
         const paymentData = {
+            flatId: this.props.currentFlat._id,
             spenderId: this.props.currentUser._id,
             sharedWithIds: payment.sharedWith,
             description: payment.description,

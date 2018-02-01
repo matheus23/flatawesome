@@ -1,6 +1,6 @@
 import { createMuiTheme } from "material-ui/styles"
-
 import red from "material-ui/colors/red"
+import green from "material-ui/colors/green";
 
 export const theme = createMuiTheme({
 	palette: {
@@ -113,4 +113,21 @@ export const styles = theme => ({
 		width: 30,
 		height: 30
 	},
+
+	financeEntrySummary: {
+		display: "flex",
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		width: "100%"
+	},
+	financeEntryAmount: {
+		fontWeight: "bold"
+	},
+	financeEntryDown: {
+		color: red[500]
+	},
+	financeEntryUp: {
+		color: green[500]
+	}
 })
