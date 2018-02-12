@@ -16,7 +16,7 @@ import IconButton from "material-ui/IconButton/IconButton"
 
 import SwipeableViews from "react-swipeable-views"
 
-import ShoppingList from "./ShoppingList"
+import ShoppingListContainer from "./ShoppingList"
 import Finances from "./Finances"
 import SidebarInfo from "./SidebarInfo"
 
@@ -68,10 +68,11 @@ class Flatawesome extends Component {
                     onChangeIndex={(index) => this.setState({ index: index })}
                     className={classes.swipeableView}
                 >
-                    <ShoppingList 
+                    <ShoppingListContainer 
                         visible={this.state.index === 0} 
                         fabContainer={this.fabContainer[0]} 
-                        shoppingList={this.props.shoppingList}
+                        currentFlat={this.props.currentFlat}
+                        currentUser={this.props.currentUser}
                     />
                     <Finances 
                         visible={this.state.index === 1} 

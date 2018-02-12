@@ -36,15 +36,11 @@ class App extends Component {
 }
 
 export default withTracker(() => {
-	Meteor.subscribe("shoppingList")
-	Meteor.subscribe("finances")
 	Meteor.subscribe("flats")
 
 	const currentUser = Meteor.user()
 
 	const flats = FlatsCollection.find().fetch()
-	const shoppingList = ShoppingListCollection.find().fetch()
-	const finances = FinancesCollection.find().fetch()
 
 	const currentFlat = flats.find((flat) => 
 		flat.members.includes(currentUser._id)
@@ -58,8 +54,6 @@ export default withTracker(() => {
 	const relatedUsers = Meteor.users.find().fetch()
 
 	return {
-		shoppingList: shoppingList,
-		finances: finances,
 		flats: flats,
 		currentUser: currentUser,
 		currentFlat: currentFlat,

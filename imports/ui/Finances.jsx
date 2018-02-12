@@ -37,6 +37,9 @@ import ExpansionPanelSummary from "material-ui/ExpansionPanel/ExpansionPanelSumm
 import ExpandMoreIcon from "material-ui-icons/ExpandMore"
 import ExpansionPanelDetails from "material-ui/ExpansionPanel/ExpansionPanelDetails";
 
+import { withTracker } from "meteor/react-meteor-data"
+import { FinancesCollection } from "../api/FinancesCollection"
+
 class Finances extends Component {
     constructor(props) {
         super(props)
@@ -370,4 +373,14 @@ class EuroAmountInput extends Component {
     }
 }
 
-export default withStyles(styles, { withTheme: true })(Finances)
+export default withTracker(props => {
+    const { currentFlat } = props
+
+    Meteor.subscribe("finances", currentFlat._id)
+
+    const finances = FinancesCollection.find().fetch()
+
+    return {
+        finances
+    }
+})(withStyles(styles, { withTheme: true })(Finances))

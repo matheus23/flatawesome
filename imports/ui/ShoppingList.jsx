@@ -27,7 +27,10 @@ import CloseIcon from "material-ui-icons/Close"
 import TimeAgo from "react-timeago"
 
 import { theme, styles } from "./Theme"
-import Snackbar from "material-ui/Snackbar/Snackbar";
+import Snackbar from "material-ui/Snackbar/Snackbar"
+
+import { withTracker } from "meteor/react-meteor-data"
+import { ShoppingListCollection } from "../api/ShoppingListCollection"
 
 class ShoppingList extends Component {
     constructor(props) {
@@ -280,4 +283,16 @@ class AddShoppingListItemDialog extends Component {
     }
 }
 
-export default withStyles(styles, { withTheme: true })(ShoppingList)
+export default ShoppingListContainer = withTracker(props => {
+    const { currentFlat } = props
+
+    Meteor.subscribe("shoppingList", currentFlat._id)
+
+    const shoppingList = ShoppingListCollection.find().fetch()
+
+    return {
+        currentFlat,
+        shoppingList
+    }
+})
+(withStyles(styles, { withTheme: true })(ShoppingList))
